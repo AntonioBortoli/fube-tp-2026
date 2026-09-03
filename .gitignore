@@ -1,0 +1,14 @@
+target/
+build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+*.log
+.idea/
+*.iml
+*.iws
+.vscode/
+.DS_Store
+HELP.md
+
+.claude/

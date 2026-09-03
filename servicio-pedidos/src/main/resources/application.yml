@@ -1,0 +1,20 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: servicio-pedidos
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pedidos_db
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  batch:
+    job:
+      enabled: false

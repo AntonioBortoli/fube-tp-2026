@@ -1,0 +1,3 @@
+rootProject.name = 'tp'
+
+include 'servicio-clientes', 'servicio-inventario', 'servicio-pedidos'
