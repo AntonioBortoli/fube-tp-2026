@@ -1,4 +1,4 @@
-package com.tiendaonline.pedidos.dto;
+package com.tiendaonline.pedidos.dto.response;
 
 import com.tiendaonline.pedidos.model.enums.EstadoPedido;
 import lombok.AllArgsConstructor;

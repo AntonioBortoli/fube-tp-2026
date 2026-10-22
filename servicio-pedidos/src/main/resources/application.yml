@@ -18,3 +18,9 @@ spring:
   batch:
     job:
       enabled: false
+
+servicios:
+  clientes:
+    url: http://localhost:8081
+  inventario:
+    url: http://localhost:8082

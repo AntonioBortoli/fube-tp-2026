@@ -1,24 +1,22 @@
-package com.tiendaonline.pedidos.dto;
+
+package com.tiendaonline.pedidos.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 import java.util.UUID;
 /**
- * DTO para representar la respuesta de un ItemPedido.
+ * DTO para representar la solicitud de una Reserva.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemPedidoResponse {
-    private UUID id;
+public class ReservaRequest {
     private UUID productoId;
+    private UUID pedidoId;
     private Integer cantidad;
-    private BigDecimal precioUnitario;
 }
