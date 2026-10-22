@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-
+/**
+ * DTO para representar la respuesta de un ItemPedido.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -20,7 +20,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
+/**
+ * Pruebas unitarias para la clase PedidoService.
+ */
 @ExtendWith(MockitoExtension.class)
 public class PedidoServiceTest {
 
@@ -29,7 +31,10 @@ public class PedidoServiceTest {
 
     @InjectMocks
     private PedidoService pedidoService;
-
+    /**
+     * Prueba unitaria para el método obtenerPorId de PedidoService.
+     * Verifica que cuando se proporciona un ID válido, se retorna un PedidoResponse correspondiente.
+     */
     @Test
     void obtenerPorId_cuandoExiste_retornaPedidoResponse() {
         UUID id = UUID.randomUUID();
@@ -52,7 +57,10 @@ public class PedidoServiceTest {
         assertEquals(EstadoPedido.CREADO, response.getEstado());
         verify(pedidoRepository, times(1)).findById(id);
     }
-
+    /**
+     * Prueba unitaria para el método obtenerPorId de PedidoService.
+     * Verifica que cuando se proporciona un ID que no existe, se lanza la excepción PedidoNoEncontrado.
+     */
     @Test
     void obtenerPorId_cuandoNoExiste_lanzaExcepcion() {
         UUID id = UUID.randomUUID();
@@ -61,7 +69,10 @@ public class PedidoServiceTest {
         assertThrows(PedidoNoEncontrado.class, () -> pedidoService.obtenerPorId(id));
         verify(pedidoRepository, times(1)).findById(id);
     }
-
+    /**
+     * Prueba unitaria para el método listarPorCliente de PedidoService.
+     * Verifica que cuando se proporciona un clienteId válido, se retorna una lista de PedidoResponse correspondiente.
+     */
     @Test
     void listarPorClienteId_retornaListaDePedidos() {
         UUID clienteId = UUID.randomUUID();

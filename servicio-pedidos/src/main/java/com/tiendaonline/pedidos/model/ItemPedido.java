@@ -5,7 +5,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-
+/**
+ * Entidad que representa un item de un pedido.
+ */
 @Entity
 @Table(name = "items_pedido")
 @Getter

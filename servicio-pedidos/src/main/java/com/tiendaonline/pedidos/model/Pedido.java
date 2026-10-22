@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
+/**
+ * Entidad que representa un pedido en el sistema.
+ */
 
 @Entity
 @Table(name="pedidos")
