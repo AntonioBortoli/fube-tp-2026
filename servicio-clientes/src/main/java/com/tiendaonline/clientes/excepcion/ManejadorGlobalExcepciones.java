@@ -2,14 +2,12 @@ package com.tiendaonline.clientes.excepcion;
 
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.View;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -18,11 +16,6 @@ import java.util.stream.Collectors;
 
 public class ManejadorGlobalExcepciones {
 
-    private final View error;
-
-    public ManejadorGlobalExcepciones(View error) {
-        this.error = error;
-    }
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> manejarNoEncontrado(RecursoNoEncontradoException ex, HttpServletRequest request) {
@@ -70,7 +63,7 @@ public class ManejadorGlobalExcepciones {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> manejarException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> manejarException(HttpServletRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .titulo("Error interno del servidor")
                 .estado(HttpStatus.INTERNAL_SERVER_ERROR.value())

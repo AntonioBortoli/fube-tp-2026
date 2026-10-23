@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface ClienteRepositorio extends JpaRepository<Cliente, UUID> {
 
-    boolean existsByNombre(String email);
+    boolean existsByEmail(String email);
 
     Optional<Cliente> findByEmail(String email);
 }
