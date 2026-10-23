@@ -23,24 +23,21 @@ public class InventarioController {
 
     @GetMapping( "/productos/{id}/disponibilidad")
     public ResponseEntity<DisponibilidadResponse> consultarDisponibilidad(@PathVariable UUID id) {
-       
         return ResponseEntity.ok(inventarioService.consultarDisponibilidad(id));
     }
 
 
-    @PostMapping( "/reservas" )
+    @PostMapping( "/reservas")
     public ResponseEntity<ReservaResponse> reservarStock(@Valid @RequestBody ReservaRequest request) {
-       
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(inventarioService.reservarStock(request) );
+                .body(inventarioService.reservarStock(request));
     }
 
 
 
-    @PatchMapping( "/reservas/{id}/liberar")
+    @PatchMapping("/reservas/{id}/liberar")
     public ResponseEntity<ReservaResponse> liberarReserva(@PathVariable UUID id) {
-        
-        return ResponseEntity.ok(inventarioService.liberarReserva(id) );
+        return ResponseEntity.ok(inventarioService.liberarReserva(id));
     }
 
 
