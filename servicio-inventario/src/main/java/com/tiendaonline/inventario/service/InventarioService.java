@@ -16,11 +16,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
-
+import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor  
 public class InventarioService {
@@ -30,6 +33,10 @@ public class InventarioService {
 
     public DisponibilidadResponse consultarDisponibilidad(UUID productoId) {
        
+
+        log.info("Consultando disponibilidad para producto ID: {}", productoId);
+
+
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "Producto no encontrado con ID: " + productoId));
@@ -45,6 +52,10 @@ public class InventarioService {
 
     @Transactional
     public ReservaResponse reservarStock(ReservaRequest request) {
+
+         log.info("Iniciando reserva de stock: productoId={}, pedidoId={}, cantidad={}",
+                request.productoId(), request.pedidoId(), request.cantidad());
+
         // Buscar el producto que se quiere reservar
         Producto producto = productoRepository.findById(request.productoId())
                 .orElseThrow(() -> new RecursoNoEncontradoException(
@@ -75,7 +86,8 @@ public class InventarioService {
         reserva.setFechaCreacion(LocalDateTime.now());
         reservaRepository.save(reserva);  // Guardar la reserva en la DB
         
-        return new ReservaResponse(
+
+        ReservaResponse response = new ReservaResponse(
                 reserva.getId(),                        
                 reserva.getProducto().getId(),          
                 reserva.getPedidoId(),                  
@@ -83,42 +95,91 @@ public class InventarioService {
                 reserva.getEstado().name(),             
                 reserva.getFechaCreacion()              
         );
+
+
+        log.info("Reserva exitosa ID: {}. Stock restante: {}", reserva.getId(), producto.getCantidadDisponible());
+        return response;
+
     }
 
 
 
-    @Transactional
+
+        @Transactional
     public ReservaResponse liberarReserva(UUID reservaId) {
-         // Buscar la reserva por su ID
+        log.info("Liberando reserva ID: {}", reservaId);
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "Reserva no encontrada con ID: " + reservaId));
 
-
-        //  Verificar que no estE ya liberada
         if (reserva.getEstado() == EstadoReserva.LIBERADA) {
             throw new StockInsuficienteException(
                     "La reserva con ID: " + reservaId + " ya fue liberada");
         }
-        //  Cambiar el estada a LIBERADA
+
+
+
         reserva.setEstado(EstadoReserva.LIBERADA);
-        //  Devolver la cantidad reservada al stock
         Producto producto = reserva.getProducto();
         producto.setCantidadDisponible(
                 producto.getCantidadDisponible() + reserva.getCantidad()
         );
 
-        //  Guardar los cambios
+
+
         productoRepository.save(producto);
         reservaRepository.save(reserva);
-       
+
+        log.info("Reserva ID: {} liberada. Nuevo stock: {}", reservaId, producto.getCantidadDisponible());
+
         return new ReservaResponse(
                 reserva.getId(),
                 producto.getId(),
                 reserva.getPedidoId(),
                 reserva.getCantidad(),
-                reserva.getEstado().name(),             // "LIBERADA"
+                reserva.getEstado().name(),
                 reserva.getFechaCreacion()
         );
+        
     }
+
+
+
+    @Transactional
+    public List<ReservaResponse> liberarReservasPorPedido(UUID pedidoId) {
+        
+        
+        log.info("Liberando todas las reservas para el pedido ID: {}", pedidoId);
+        List<Reserva> reservas = reservaRepository.findByPedidoId(pedidoId);
+
+        if (reservas.isEmpty()) {
+            throw new RecursoNoEncontradoException("No se encontraron reservas para el pedido: " + pedidoId);
+        }
+
+
+
+        List<ReservaResponse> respuestas = new ArrayList<>();
+        for (Reserva reserva : reservas) {
+            if (reserva.getEstado() == EstadoReserva.ACTIVA) {
+                reserva.setEstado(EstadoReserva.LIBERADA);
+                Producto producto = reserva.getProducto();
+                producto.setCantidadDisponible(producto.getCantidadDisponible() + reserva.getCantidad());
+                productoRepository.save(producto);
+                reservaRepository.save(reserva);
+            }
+            respuestas.add(new ReservaResponse(
+                    reserva.getId(),
+                    reserva.getProducto().getId(),
+                    reserva.getPedidoId(),
+                    reserva.getCantidad(),
+                    reserva.getEstado().name(),
+                    reserva.getFechaCreacion()
+            ));
+        }
+
+
+        return respuestas;
+    }
+
+    
 }

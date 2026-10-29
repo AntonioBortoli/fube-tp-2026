@@ -45,5 +45,19 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleTypeMismatch(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "Identificador o parámetro con formato inválido"));
+    }
+
+    
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleNotReadable(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "El cuerpo de la solicitud no es un JSON válido o faltan datos"));
+    }
+
+
     
 }
