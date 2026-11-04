@@ -15,3 +15,5 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+statsig:
+  secret-key: secret-SfODw4TGj4I8B0dU3DG9OiKRj7GNO44yWMjFfKelMb3

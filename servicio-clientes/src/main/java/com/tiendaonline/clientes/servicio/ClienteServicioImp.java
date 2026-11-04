@@ -20,6 +20,7 @@ import java.util.UUID;
 public class ClienteServicioImp implements ClienteServicio {
 
     private final ClienteRepositorio repositorio;
+    private final PiiMaskingServicio piiMaskingServicio;
 
     @Override
     @Transactional
@@ -42,7 +43,17 @@ public class ClienteServicioImp implements ClienteServicio {
 
         Cliente cliente = repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("No se encontró cliente con el ID: " + id));
 
-        return ClienteMapper.toResponse(cliente);
+        ClienteResponse response=ClienteMapper.toResponse(cliente);
+        if(piiMaskingServicio.debeEnmascarar(id.toString())){
+
+
+            response.setNombre(piiMaskingServicio.enmascararNombre(response.getNombre()));
+            response.setEmail(piiMaskingServicio.enmascararEmail(response.getEmail()));
+
+
+        }
+
+        return response;
     }
 
 
