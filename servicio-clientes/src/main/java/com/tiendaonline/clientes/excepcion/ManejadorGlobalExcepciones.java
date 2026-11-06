@@ -74,4 +74,18 @@ public class ManejadorGlobalExcepciones {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(ServicioExternoExcepcion.class)
+    public ResponseEntity<ErrorResponse> manejarServicioExterno(ServicioExternoExcepcion ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .titulo("Servicio externo no disponible")
+                .estado(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .detalle(ex.getMessage())
+                .instancia(request.getRequestURI())
+                .fecha(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
 }

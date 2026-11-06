@@ -17,3 +17,9 @@ spring:
     locations: classpath:db/migration
 statsig:
   secret-key: secret-SfODw4TGj4I8B0dU3DG9OiKRj7GNO44yWMjFfKelMb3
+
+servicios:
+  pedidos:
+    url: ${URL_SERVICIO_PEDIDOS:http://localhost:8083}
+    connect-timeout: 3000
+    read-timeout: 3000

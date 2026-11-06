@@ -1,5 +1,6 @@
 package com.tiendaonline.clientes.controlador;
 
+import com.tiendaonline.clientes.dto.ClienteConPedidosResponse;
 import com.tiendaonline.clientes.dto.ClienteResponse;
 import com.tiendaonline.clientes.dto.CrearClienteRequest;
 import com.tiendaonline.clientes.servicio.ClienteServicio;
@@ -60,6 +61,12 @@ public class ClienteControlador {
         return ResponseEntity.ok(cliente);
     }
 
-
+    @GetMapping({"/{id}/con-pedidos","/{id}/con-pedidos/"})
+    @Operation(summary = "Consultar un cliente junto con su historial de pedidos")
+    public ResponseEntity<ClienteConPedidosResponse> obtenerClienteConPedidos(@PathVariable UUID id)
+    {
+        ClienteConPedidosResponse respuesta = servicio.obtenerClienteConPedidos(id);
+        return ResponseEntity.ok(respuesta);
+    }
 
 }

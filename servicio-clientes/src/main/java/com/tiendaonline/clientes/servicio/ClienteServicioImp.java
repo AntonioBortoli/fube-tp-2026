@@ -1,7 +1,10 @@
 package com.tiendaonline.clientes.servicio;
 
+import com.tiendaonline.clientes.cliente.PedidosClient;
+import com.tiendaonline.clientes.dto.ClienteConPedidosResponse;
 import com.tiendaonline.clientes.dto.ClienteResponse;
 import com.tiendaonline.clientes.dto.CrearClienteRequest;
+import com.tiendaonline.clientes.dto.PedidoResumenResponse;
 import com.tiendaonline.clientes.excepcion.EmailDuplicadoException;
 import com.tiendaonline.clientes.excepcion.RecursoNoEncontradoException;
 import com.tiendaonline.clientes.mapper.ClienteMapper;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -21,6 +25,7 @@ public class ClienteServicioImp implements ClienteServicio {
 
     private final ClienteRepositorio repositorio;
     private final PiiMaskingServicio piiMaskingServicio;
+    private final PedidosClient pedidosClient;
 
     @Override
     @Transactional
@@ -57,6 +62,19 @@ public class ClienteServicioImp implements ClienteServicio {
     }
 
 
+    @Override
+    public ClienteConPedidosResponse obtenerClienteConPedidos(UUID id) {
 
+
+        ClienteResponse cliente= obtenerClientePorId(id);
+
+        List<PedidoResumenResponse> pedidos= pedidosClient.obtenerPedidosPorCliente(id);
+
+        return ClienteConPedidosResponse.builder()
+                .cliente(cliente)
+                .pedidos(pedidos)
+                .build();
+
+    }
 
 }
