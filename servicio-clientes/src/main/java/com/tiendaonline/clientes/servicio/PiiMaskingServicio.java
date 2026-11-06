@@ -98,8 +98,8 @@ public class PiiMaskingServicio {
 
         int indicePunto=email.lastIndexOf(".");
 
-        String extension=(indicePunto != -1 && indicePunto<email.indexOf('@'))
-                ? email.substring(indicePunto+1)
+        String extension=(indicePunto != -1 && indicePunto>email.indexOf('@'))
+                ? email.substring(indicePunto)
                 : ".com";
 
 
