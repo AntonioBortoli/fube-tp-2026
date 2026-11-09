@@ -3,10 +3,13 @@ package com.tiendaonline.pedidos;
 import java.util.TimeZone;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 /**
  * Clase principal de la aplicación ServicioPedidos.
  */
 @SpringBootApplication
+@EnableScheduling
 public class ServicioPedidosApplication {
     /**
      * Método principal que inicia la aplicación.
