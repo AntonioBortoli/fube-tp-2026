@@ -1,6 +1,6 @@
 package com.tiendaonline.clientes.servicio;
 
-import com.tiendaonline.clientes.cliente.PedidosClient;
+import com.tiendaonline.clientes.cliente.PedidosCliente;
 import com.tiendaonline.clientes.dto.ClienteConPedidosResponse;
 import com.tiendaonline.clientes.dto.ClienteResponse;
 import com.tiendaonline.clientes.dto.CrearClienteRequest;
@@ -25,7 +25,7 @@ public class ClienteServicioImp implements ClienteServicio {
 
     private final ClienteRepositorio repositorio;
     private final PiiMaskingServicio piiMaskingServicio;
-    private final PedidosClient pedidosClient;
+    private final PedidosCliente pedidosCliente;
 
     @Override
     @Transactional
@@ -68,7 +68,7 @@ public class ClienteServicioImp implements ClienteServicio {
 
         ClienteResponse cliente= obtenerClientePorId(id);
 
-        List<PedidoResumenResponse> pedidos= pedidosClient.obtenerPedidosPorCliente(id);
+        List<PedidoResumenResponse> pedidos= pedidosCliente.obtenerPedidosPorCliente(id);
 
         return ClienteConPedidosResponse.builder()
                 .cliente(cliente)

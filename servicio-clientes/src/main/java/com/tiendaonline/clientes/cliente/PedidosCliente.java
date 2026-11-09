@@ -9,7 +9,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-
+import org.slf4j.MDC;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -21,12 +21,12 @@ import java.util.UUID;
 @Slf4j
 
 
-public class PedidosClient {
+public class PedidosCliente {
 
     private final RestClient restClient;
 
 
-    public PedidosClient(
+    public PedidosCliente(
             @Value("${servicios.pedidos.url}") String baseUrl,
             @Value("${servicios.pedidos.connect-timeout-ms:3000}") long connectTimeoutMs,
             @Value("${servicios.pedidos.read-timeout-ms:3000}") long readTimeoutMs)
@@ -45,11 +45,22 @@ public class PedidosClient {
     public List<PedidoResumenResponse> obtenerPedidosPorCliente(UUID clienteId){
 
         try{
+
+            String traceId = MDC.get("traceId");
+
             List<PedidoResumenResponse> pedidos = restClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/pedidos")
                             .queryParam("clienteId", clienteId)
                             .build())
+                    .headers(headers ->{
+                        if(
+                                traceId!=null && !traceId.isBlank()
+                        ){
+                            headers.set("X-Correlation-ID", traceId);
+                        }
+                    }
+                            )
                     .retrieve()
                     .body(new ParameterizedTypeReference <List<PedidoResumenResponse>>() {});
 

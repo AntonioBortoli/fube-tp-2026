@@ -21,5 +21,19 @@ statsig:
 servicios:
   pedidos:
     url: ${URL_SERVICIO_PEDIDOS:http://localhost:8083}
-    connect-timeout: 3000
-    read-timeout: 3000
+    connect-timeout-ms: 3000
+    read-timeout-ms: 3000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,infor,metrics
+
+  endpoint:
+    health:
+      show-details: always
+
+  logging:
+    pattern:
+      level: "%5p [traceId=%X{traceId:-N/A}]"

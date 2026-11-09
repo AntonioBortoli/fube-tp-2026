@@ -61,7 +61,7 @@ public class ClienteControlador {
         return ResponseEntity.ok(cliente);
     }
 
-    @GetMapping({"/{id}/con-pedidos","/{id}/con-pedidos/"})
+    @GetMapping({"/{id}/pedidos","/{id}/ordenes"})
     @Operation(summary = "Consultar un cliente junto con su historial de pedidos")
     public ResponseEntity<ClienteConPedidosResponse> obtenerClienteConPedidos(@PathVariable UUID id)
     {

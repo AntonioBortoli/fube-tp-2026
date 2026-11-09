@@ -8,7 +8,7 @@ import lombok.Setter;
 
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -23,7 +23,7 @@ public class PedidoResumenResponse {
     private UUID id;
     private String estado;
     private BigDecimal montoTotal;
-    private LocalDate fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
 
 }
