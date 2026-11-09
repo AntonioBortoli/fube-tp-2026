@@ -2,7 +2,7 @@ package com.tiendaonline.pedidos.service;
 
 import com.tiendaonline.pedidos.client.ClientesClient;
 import com.tiendaonline.pedidos.client.InventarioClient;
-import com.tiendaonline.pedidos.dto.ItemPedidoRequest;
+import com.tiendaonline.pedidos.dto.request.ItemPedidoRequest;
 import com.tiendaonline.pedidos.dto.request.PedidoRequest;
 import com.tiendaonline.pedidos.dto.response.PedidoResponse;
 import com.tiendaonline.pedidos.exception.ClienteNoEncontrado;

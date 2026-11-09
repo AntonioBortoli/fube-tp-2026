@@ -1,4 +1,4 @@
-package com.tiendaonline.pedidos.dto;
+package com.tiendaonline.pedidos.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;

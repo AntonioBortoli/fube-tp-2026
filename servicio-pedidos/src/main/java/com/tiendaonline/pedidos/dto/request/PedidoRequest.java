@@ -1,6 +1,6 @@
 package com.tiendaonline.pedidos.dto.request;
 
-import com.tiendaonline.pedidos.dto.ItemPedidoRequest;
+// Import not needed
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
