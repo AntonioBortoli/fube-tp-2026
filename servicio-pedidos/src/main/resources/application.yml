@@ -27,3 +27,16 @@ servicios:
     url: http://localhost:8081
   inventario:
     url: http://localhost:8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

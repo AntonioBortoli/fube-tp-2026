@@ -22,8 +22,14 @@ import java.util.UUID;
 @Builder
 public class Pedido {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @PrePersist
+    public void asignarIdSiFalta() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
     @Column(name="cliente_id",nullable = false)
     private UUID clienteId;
 

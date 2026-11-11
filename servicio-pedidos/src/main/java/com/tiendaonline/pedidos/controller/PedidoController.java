@@ -59,4 +59,15 @@ public class PedidoController {
         PedidoResponse response = pedidoService.crearPedido(request);
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(response);
     }
+
+    /**
+     * Endpoint para cancelar un pedido en estado CREADO o CONFIRMADO liberando su reserva de stock.
+     * @param id Identificador del pedido.
+     * @return Detalles del pedido cancelado.
+     */
+    @PostMapping("/{id}/cancelar")
+    @Operation(summary = "Cancelar un pedido en estado CREADO o CONFIRMADO liberando la reserva de stock")
+    public ResponseEntity<PedidoResponse> cancelarPedido(@PathVariable UUID id) {
+        return ResponseEntity.ok(pedidoService.cancelarPedido(id));
+    }
 }

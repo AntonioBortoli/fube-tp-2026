@@ -7,6 +7,7 @@ import com.tiendaonline.pedidos.dto.request.PedidoRequest;
 import com.tiendaonline.pedidos.dto.response.ItemPedidoResponse;
 import com.tiendaonline.pedidos.dto.response.PedidoResponse;
 import com.tiendaonline.pedidos.exception.ClienteNoEncontrado;
+import com.tiendaonline.pedidos.exception.EstadoPedidoInvalido;
 import com.tiendaonline.pedidos.exception.PedidoNoEncontrado;
 import com.tiendaonline.pedidos.exception.StockInsuficiente;
 import com.tiendaonline.pedidos.model.ItemPedido;
@@ -158,5 +159,29 @@ public class PedidoService {
 
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
         return mapearADto(pedidoGuardado);
+    }
+
+    /**
+     * Cancela un pedido en estado CREADO o CONFIRMADO y libera la reserva de stock asociada.
+     * @param id Identificador del pedido a cancelar.
+     * @return DTO con los detalles del pedido cancelado.
+     * @throws PedidoNoEncontrado si el pedido no existe.
+     * @throws EstadoPedidoInvalido si el pedido ya está cancelado o expirado.
+     */
+    @Transactional
+    public PedidoResponse cancelarPedido(UUID id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new PedidoNoEncontrado(id));
+
+        if (pedido.getEstado() != EstadoPedido.CREADO && pedido.getEstado() != EstadoPedido.CONFIRMADO) {
+            throw new EstadoPedidoInvalido("No se puede cancelar un pedido en estado: " + pedido.getEstado());
+        }
+
+        inventarioClient.liberarReservaPorPedido(pedido.getId());
+
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        pedido.setFechaActualizacion(LocalDateTime.now());
+
+        return mapearADto(pedidoRepository.save(pedido));
     }
 }

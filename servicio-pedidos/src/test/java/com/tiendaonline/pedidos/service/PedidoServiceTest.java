@@ -6,6 +6,7 @@ import com.tiendaonline.pedidos.dto.request.ItemPedidoRequest;
 import com.tiendaonline.pedidos.dto.request.PedidoRequest;
 import com.tiendaonline.pedidos.dto.response.PedidoResponse;
 import com.tiendaonline.pedidos.exception.ClienteNoEncontrado;
+import com.tiendaonline.pedidos.exception.EstadoPedidoInvalido;
 import com.tiendaonline.pedidos.exception.PedidoNoEncontrado;
 import com.tiendaonline.pedidos.exception.StockInsuficiente;
 import com.tiendaonline.pedidos.model.Pedido;
@@ -197,5 +198,47 @@ public class PedidoServiceTest {
         // Act & Assert
         assertThrows(StockInsuficiente.class, () -> pedidoService.crearPedido(request));
         verify(pedidoRepository, never()).save(any(Pedido.class));
+    }
+
+    /**
+     * Prueba unitaria para cancelarPedido cuando el estado es CREADO.
+     */
+    @Test
+    void cancelarPedido_cuandoEstadoEsCreado_cancelaYLiberaStock() {
+        UUID id = UUID.randomUUID();
+        Pedido pedido = Pedido.builder()
+                .id(id)
+                .clienteId(UUID.randomUUID())
+                .estado(EstadoPedido.CREADO)
+                .montoTotal(new BigDecimal("100.00"))
+                .items(new ArrayList<>())
+                .build();
+
+        when(pedidoRepository.findById(id)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> i.getArgument(0));
+
+        PedidoResponse response = pedidoService.cancelarPedido(id);
+
+        assertEquals(EstadoPedido.CANCELADO, response.getEstado());
+        verify(inventarioClient, times(1)).liberarReservaPorPedido(id);
+        verify(pedidoRepository, times(1)).save(pedido);
+    }
+
+    /**
+     * Prueba unitaria para cancelarPedido cuando el pedido ya está CANCELADO.
+     */
+    @Test
+    void cancelarPedido_cuandoEstadoYaEsCancelado_lanzaExcepcion() {
+        UUID id = UUID.randomUUID();
+        Pedido pedido = Pedido.builder()
+                .id(id)
+                .estado(EstadoPedido.CANCELADO)
+                .build();
+
+        when(pedidoRepository.findById(id)).thenReturn(Optional.of(pedido));
+
+        assertThrows(EstadoPedidoInvalido.class, () -> pedidoService.cancelarPedido(id));
+        verify(inventarioClient, never()).liberarReservaPorPedido(any());
+        verify(pedidoRepository, never()).save(any());
     }
 }
