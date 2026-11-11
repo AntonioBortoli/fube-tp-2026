@@ -26,7 +26,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-
+/**
+ * Clase de prueba de integración para el servicio de pedidos.
+ * Utiliza MockServer para simular las respuestas de los servicios externos (Clientes e Inventario).
+ * Contiene pruebas para la creación y cancelación de pedidos, verificando la interacción con los servicios simulados.
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PedidoIntegracionTest {
 
@@ -35,39 +39,50 @@ public class PedidoIntegracionTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    // Levantamos MockServer en un puerto libre antes de arrancar los tests
     @BeforeAll
     static void iniciarMockServer() {
         mockServer = startClientAndServer(1080);
     }
-
+    /**
+     * Limpia las expectativas del MockServer antes de cada prueba.
+     * Esto asegura que cada prueba comience con un estado limpio del servidor simulado.
+     */
     @BeforeEach
     void limpiarExpectations() {
         if (mockServer != null) {
             mockServer.reset();
         }
     }
-
-    // Le decimos a Spring Boot que apunte los clients HTTP al puerto de MockServer
+    /**
+     * Configura las propiedades dinámicas para los servicios externos.
+     * Establece las URLs de los servicios de Clientes e Inventario para que apunten al MockServer.
+     *
+     * @param registry Registro de propiedades dinámicas.
+     */
     @DynamicPropertySource
     static void configurarUrls(DynamicPropertyRegistry registry) {
         registry.add("servicios.clientes.url", () -> "http://localhost:1080");
         registry.add("servicios.inventario.url", () -> "http://localhost:1080");
     }
-
+    /**
+     * Detiene el MockServer después de todas las pruebas.
+     * Esto libera los recursos utilizados por el servidor simulado.
+     */
     @AfterAll
     static void detenerMockServer() {
         if (mockServer != null) {
             mockServer.stop();
         }
     }
-
+    /**
+     * Prueba de integración para la creación de un pedido.
+     * Simula la existencia del cliente y la disponibilidad de stock, y verifica que el pedido se cree correctamente.
+     */
     @Test
     void crearPedido_flujoCompleto_conServiciosSimuladosPorMockServer() {
         UUID clienteId = UUID.randomUUID();
         UUID productoId = UUID.randomUUID();
 
-        // 1. Simulamos que servicio-clientes (8081) responde 200 OK
         mockServer.when(
                 HttpRequest.request()
                         .withMethod("GET")
@@ -77,7 +92,6 @@ public class PedidoIntegracionTest {
                         .withStatusCode(200)
         );
 
-        // 2. Simulamos que servicio-inventario (8082) responde 201 Created al reservar stock
         mockServer.when(
                 HttpRequest.request()
                         .withMethod("POST")
@@ -87,7 +101,6 @@ public class PedidoIntegracionTest {
                         .withStatusCode(201)
         );
 
-        // 3. Enviamos un POST real a nuestro propio controller de pedidos
         PedidoRequest request = PedidoRequest.builder()
                 .clienteId(clienteId)
                 .items(List.of(
@@ -102,15 +115,16 @@ public class PedidoIntegracionTest {
         ResponseEntity<PedidoResponse> response = restTemplate.postForEntity(
                 "/pedidos", request, PedidoResponse.class);
 
-        // 4. Verificaciones
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(clienteId, response.getBody().getClienteId());
         assertEquals(EstadoPedido.CREADO, response.getBody().getEstado());
-        // 3 unidades * $150.00 = $450.00
         assertEquals(new BigDecimal("450.00"), response.getBody().getMontoTotal());
     }
-
+    /**
+     * Prueba de integración para la creación de un pedido cuando el cliente no existe.
+     * Simula una respuesta 404 del servicio de clientes y verifica que se retorne un estado 404 al intentar crear el pedido.
+     */
     @Test
     void crearPedido_cuandoClienteNoExiste_devuelve404() {
         UUID clienteId = UUID.randomUUID();
@@ -139,7 +153,10 @@ public class PedidoIntegracionTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
-
+    /**
+     * Prueba de integración para la creación de un pedido cuando no hay suficiente stock.
+     * Simula una respuesta 409 del servicio de inventario y verifica que se retorne un estado 409 al intentar crear el pedido.
+     */
     @Test
     void crearPedido_cuandoNoHayStock_devuelve409() {
         UUID clienteId = UUID.randomUUID();
@@ -176,7 +193,10 @@ public class PedidoIntegracionTest {
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
     }
-
+    /**
+     * Prueba de integración para la cancelación de un pedido.
+     * Simula la existencia del pedido y la liberación de stock, y verifica que el pedido se cancele correctamente.
+     */
     @Test
     void cancelarPedido_flujoCompleto_liberaStockEnInventario() {
         UUID clienteId = UUID.randomUUID();
@@ -218,7 +238,6 @@ public class PedidoIntegracionTest {
         assertNotNull(cancelado.getBody());
         assertEquals(EstadoPedido.CANCELADO, cancelado.getBody().getEstado());
 
-        // Verificamos que el pedidoId enviado al reservar sea el mismo que el guardado y liberado
         mockServer.verify(
                 HttpRequest.request()
                         .withMethod("POST")

@@ -27,19 +27,20 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 /**
- * Configuración del job de expiración de pedidos.
- * Este job se encarga de identificar los pedidos que han estado en estado CREADO por más de 24 horas,
- * cambiarlos a estado EXPIRADO y liberar la reserva de stock correspondiente en el servicio de inventario.
+ * Configuración del Job de expiración de pedidos.
+ * Este job busca los pedidos en estado CREADO que hayan sido creados hace más de 24 horas,
+ * libera la reserva de stock asociada a cada pedido y actualiza su estado a EXPIRADO.
  */
 @Configuration
 public class ExpiracionPedidoJobConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ExpiracionPedidoJobConfig.class);
-
     /**
-     * READER: Lee todos los pedidos en estado CREADO que tengan más de 24 horas.
+     * Bean que define el ItemReader para leer los pedidos que deben expirar.
+     * Filtra los pedidos en estado CREADO que fueron creados hace más de 24 horas.
+     *
      * @param pedidoRepository Repositorio de pedidos para acceder a la base de datos.
-     * @return Un ItemReader que lee los pedidos que cumplen con los criterios de expiración.
+     * @return ItemReader que devuelve los pedidos a procesar.
      */
     @Bean
     @StepScope
@@ -49,11 +50,12 @@ public class ExpiracionPedidoJobConfig {
                 EstadoPedido.CREADO, limite);
         return new IteratorItemReader<>(pedidosVencidos);
     }
-
     /**
-     * PROCESSOR: Cambia el estado del pedido a EXPIRADO y libera la reserva en inventario.
-     * @param inventarioClient Cliente para interactuar con el servicio de inventario.
-     * @return Un ItemProcessor que procesa cada pedido, cambiando su estado y liberando la reserva de stock.
+     * Bean que define el ItemProcessor para procesar cada pedido que debe expirar.
+     * Libera la reserva de stock asociada al pedido y actualiza su estado a EXPIRADO.
+     *
+     * @param inventarioClient Cliente REST para interactuar con el servicio de inventario.
+     * @return ItemProcessor que procesa cada pedido.
      */
     @Bean
     public ItemProcessor<Pedido, Pedido> expiracionPedidosProcessor(InventarioClient inventarioClient) {
@@ -65,27 +67,26 @@ public class ExpiracionPedidoJobConfig {
             return pedido;
         };
     }
-
     /**
-     * WRITER: Persiste los cambios en la base de datos.
-     * @param pedidoRepository Repositorio de pedidos para guardar los cambios.
-     * @return Un ItemWriter que guarda los pedidos procesados en la base de datos.
+     * Bean que define el ItemWriter para escribir los pedidos expirados.
+     *
+     * @param pedidoRepository Repositorio de pedidos para acceder a la base de datos.
+     * @return ItemWriter que guarda los pedidos expirados en la base de datos.
      */
     @Bean
     public ItemWriter<Pedido> expiracionPedidosWriter(PedidoRepository pedidoRepository) {
         return chunk -> pedidoRepository.saveAll(chunk.getItems());
     }
-
     /**
-     * Configura el paso del job de expiración de pedidos.
-     * Este paso se encarga de leer, procesar y escribir los pedidos que cumplen con los criterios de expiración.
+     * Bean que define el Step del job de expiración de pedidos.
+     * Configura el reader, processor y writer para el procesamiento por lotes.
      *
-     * @param jobRepository Repositorio de jobs para manejar la ejecución del job.
-     * @param transactionManager Administrador de transacciones para manejar la persistencia de datos.
-     * @param reader Lector de pedidos que cumplen con los criterios de expiración.
-     * @param processor Procesador que actualiza el estado del pedido y libera la reserva en inventario.
-     * @param writer Escritor que persiste los cambios en la base de datos.
-     * @return Un Step configurado para la expiración de pedidos.
+     * @param jobRepository Repositorio de jobs para gestionar la ejecución del job.
+     * @param transactionManager Gestor de transacciones para manejar la persistencia.
+     * @param reader ItemReader para leer los pedidos a expirar.
+     * @param processor ItemProcessor para procesar cada pedido.
+     * @param writer ItemWriter para escribir los pedidos expirados.
+     * @return Step configurado para el job de expiración de pedidos.
      */
     @Bean
     public Step expiracionPedidosStep(JobRepository jobRepository,
@@ -100,18 +101,14 @@ public class ExpiracionPedidoJobConfig {
                 .writer(writer)
                 .build();
     }
-
     /**
-     * Job de expiración de pedidos.
-     * Este job se ejecuta periódicamente y realiza los siguientes pasos:
-     * 1. Lee todos los pedidos en estado CREADO que tengan más de 24 horas.
-     * 2. Procesa cada pedido, cambiando su estado a EXPIRADO y liberando la reserva de stock en el servicio de inventario.
-     * 3. Persiste los cambios en la base de datos.
+     * Bean que define el Job de expiración de pedidos.
+     * Configura el step y un listener para mostrar un resumen al finalizar la ejecución del job.
      *
-     * @param jobRepository Repositorio de jobs para manejar la ejecución del job.
-     * @param expiracionPedidosStep Paso que contiene la lógica de lectura, procesamiento y escritura de pedidos.
-     * @param resumenListener Listener que genera un resumen al finalizar el job.
-     * @return Un Job configurado para la expiración de pedidos.
+     * @param jobRepository Repositorio de jobs para gestionar la ejecución del job.
+     * @param expiracionPedidosStep Step que contiene la lógica de expiración de pedidos.
+     * @param resumenListener Listener que muestra un resumen al finalizar el job.
+     * @return Job configurado para la expiración de pedidos.
      */
     @Bean
     public Job expiracionPedidosJob(JobRepository jobRepository,
@@ -124,14 +121,20 @@ public class ExpiracionPedidoJobConfig {
     }
 
     /**
-     * Listener para generar un resumen de la corrida del job de expiración de pedidos.
-     * Muestra información sobre el total de pedidos leídos, expirados y la duración total del job.
+     * Bean que define el listener para mostrar un resumen al finalizar la ejecución del job.
      *
-     * @return Un JobExecutionListener que imprime el resumen al finalizar el job.
+     * @return JobExecutionListener que muestra el resumen.
      */
     @Bean
     public JobExecutionListener resumenListener() {
         return new JobExecutionListener() {
+            /**
+             * Método que se ejecuta después de la finalización del job.
+             * Muestra un resumen de la ejecución, incluyendo el número de pedidos leídos,
+             * el número de pedidos expirados y la duración total del job.
+             *
+             * @param jobExecution Información sobre la ejecución del job.
+             */
             @Override
             public void afterJob(JobExecution jobExecution) {
                 long totalLeidos = jobExecution.getStepExecutions().stream()

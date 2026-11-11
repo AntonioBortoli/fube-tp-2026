@@ -2,7 +2,7 @@ package com.tiendaonline.pedidos.exception;
 
 import java.util.UUID;
 /**
- * Excepción personalizada que se lanza cuando un pedido no es encontrado en la base de datos.
+ * Excepción personalizada que se lanza cuando no se encuentra un pedido con el ID proporcionado.
  */
 public class PedidoNoEncontrado extends RuntimeException {
     /**

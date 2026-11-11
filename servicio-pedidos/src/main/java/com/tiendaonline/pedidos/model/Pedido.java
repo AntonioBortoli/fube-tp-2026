@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 /**
- * Entidad que representa un pedido en el sistema.
+ * Entidad que representa un pedido.
+ * Contiene el identificador del pedido, el identificador del cliente, el estado del pedido,
+ * el monto total, las fechas de creación y actualización, y la lista de items del pedido.
  */
-
 @Entity
 @Table(name="pedidos")
 @Getter
@@ -45,11 +46,16 @@ public class Pedido {
 
     @Column(name="fecha_actualizacion",nullable = false)
     private LocalDateTime fechaActualizacion;
-
+    /**
+     * Lista de items del pedido.
+     */
     @Builder.Default
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval=true)
     private List<ItemPedido> items= new ArrayList<>();
-
+    /**
+     * Agrega un item al pedido y establece la relación bidireccional.
+     * @param item El item de pedido a agregar.
+     */
     public void agregarItem(ItemPedido item){
         this.items.add(item);
         item.setPedido(this);

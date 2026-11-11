@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.UUID;
 /**
  * Entidad que representa un item de un pedido.
+ * Contiene el identificador del item, el pedido al que pertenece, el identificador del producto,
+ * la cantidad y el precio unitario.
  */
 @Entity
 @Table(name = "items_pedido")

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 /**
- * Servicio para manejar la lógica de negocio relacionada con los pedidos.
- * Proporciona métodos para obtener pedidos por ID y listar pedidos por cliente.
+ * Servicio para la gestión de pedidos.
+ * Proporciona métodos para crear, obtener y cancelar pedidos, así como para listar pedidos por cliente.
  */
 @Service
 @RequiredArgsConstructor
@@ -35,9 +35,10 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     /**
      * Obtiene un pedido por su identificador.
-     * @param id Identificador del pedido.
-     * @return DTO con los detalles del pedido.
-     * @throws PedidoNoEncontrado si no se encuentra el pedido con el ID proporcionado.
+     * Si el pedido no existe, lanza una excepción PedidoNoEncontrado.
+     *
+     * @param id Identificador del pedido a consultar.
+     * @return PedidoResponse correspondiente al pedido solicitado.
      */
     @Transactional(readOnly = true)
     public PedidoResponse obtenerPorId(UUID id) {
@@ -46,9 +47,11 @@ public class PedidoService {
         return mapearADto(pedido);
     }
     /**
-     * Lista todos los pedidos asociados a un cliente específico.
-     * @param clienteId Identificador del cliente.
-     * @return Lista de DTOs con los detalles de los pedidos del cliente.
+     * Lista los pedidos de un cliente específico.
+     * Si el cliente no tiene pedidos, retorna una lista vacía.
+     *
+     * @param clienteId Identificador del cliente cuyos pedidos se desean listar.
+     * @return Lista de PedidoResponse correspondientes al cliente.
      */
     @Transactional(readOnly = true)
     public List<PedidoResponse> listarPorCliente(UUID clienteId) {
@@ -59,10 +62,10 @@ public class PedidoService {
     }
     /**
      * Mapea una entidad Pedido a su correspondiente DTO PedidoResponse.
+     *
      * @param pedido Entidad Pedido a mapear.
-     * @return DTO PedidoResponse con los datos del pedido.
+     * @return DTO PedidoResponse correspondiente al pedido.
      */
-    // Método privado para transformar la Entidad JPA al DTO de salida
     private PedidoResponse mapearADto(Pedido pedido) {
         List<ItemPedidoResponse> itemsDto = (pedido.getItems() != null)
                 ? pedido.getItems().stream()
@@ -82,8 +85,9 @@ public class PedidoService {
     }
     /**
      * Mapea una entidad ItemPedido a su correspondiente DTO ItemPedidoResponse.
+     *
      * @param item Entidad ItemPedido a mapear.
-     * @return DTO ItemPedidoResponse con los datos del item del pedido.
+     * @return DTO ItemPedidoResponse correspondiente al item del pedido.
      */
     private ItemPedidoResponse mapearItemADto(ItemPedido item) {
         return ItemPedidoResponse.builder()
@@ -94,30 +98,25 @@ public class PedidoService {
                 .build();
     }
     /**
-     * Crea un nuevo pedido.
-     * Verifica la existencia del cliente y reserva el stock de los productos.
-     * @param request DTO con los detalles del pedido a crear.
-     * @return DTO con los detalles del pedido creado.
-     * @throws ClienteNoEncontrado si el cliente no existe.
-     * @throws StockInsuficiente si no hay suficiente stock para algún producto.
+     * Crea un nuevo pedido verificando que el cliente exista y que haya suficiente stock para los productos solicitados.
+     * Si todo es correcto, crea el pedido en estado CREADO y reserva el stock correspondiente.
+     *
+     * @param request Objeto PedidoRequest que contiene los detalles del pedido a crear.
+     * @return PedidoResponse del pedido creado.
      */
     @Transactional
     public PedidoResponse crearPedido(PedidoRequest request) {
-        // 1. Verificar si el cliente existe
         if (!clientesClient.existeCliente(request.getClienteId())) {
             throw new ClienteNoEncontrado(request.getClienteId());
         }
 
-        // Generamos el ID del pedido con anticipación para asociarlo a las reservas
         UUID pedidoId = UUID.randomUUID();
         LocalDateTime ahora = LocalDateTime.now();
 
-        // 2. Calcular monto total y preparar los items
         BigDecimal montoTotal = BigDecimal.ZERO;
         List<ItemPedido> items = new ArrayList<>();
 
         for (ItemPedidoRequest itemReq : request.getItems()) {
-            // Reservar stock contra servicio-inventario
             boolean reservado = inventarioClient.reservarStock(
                     itemReq.getProductoId(),
                     pedidoId,
@@ -125,7 +124,6 @@ public class PedidoService {
             );
 
             if (!reservado) {
-                // Compensación: liberar reservas que hayan tenido éxito en este mismo pedido
                 inventarioClient.liberarReservaPorPedido(pedidoId);
                 throw new StockInsuficiente(itemReq.getProductoId());
             }
@@ -143,7 +141,6 @@ public class PedidoService {
             items.add(item);
         }
 
-        // 3. Construir y persistir la entidad Pedido
         Pedido pedido = Pedido.builder()
                 .id(pedidoId)
                 .clienteId(request.getClienteId())
@@ -160,13 +157,12 @@ public class PedidoService {
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
         return mapearADto(pedidoGuardado);
     }
-
     /**
-     * Cancela un pedido en estado CREADO o CONFIRMADO y libera la reserva de stock asociada.
+     * Cancela un pedido en estado CREADO o CONFIRMADO liberando la reserva de stock.
+     * Cambia el estado del pedido a CANCELADO y actualiza la fecha de actualización.
+     *
      * @param id Identificador del pedido a cancelar.
-     * @return DTO con los detalles del pedido cancelado.
-     * @throws PedidoNoEncontrado si el pedido no existe.
-     * @throws EstadoPedidoInvalido si el pedido ya está cancelado o expirado.
+     * @return PedidoResponse actualizado después de la cancelación.
      */
     @Transactional
     public PedidoResponse cancelarPedido(UUID id) {

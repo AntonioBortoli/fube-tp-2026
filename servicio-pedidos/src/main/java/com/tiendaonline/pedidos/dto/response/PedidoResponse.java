@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 /**
- * DTO para representar la respuesta de un Pedido.
+ * DTO para la respuesta de un pedido.
+ * Contiene el identificador del pedido, el identificador del cliente, el estado del pedido,
+ * el monto total, las fechas de creación y actualización, y la lista de items del pedido.
  */
 @Getter
 @Setter

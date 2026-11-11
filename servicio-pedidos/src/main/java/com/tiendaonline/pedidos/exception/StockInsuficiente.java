@@ -6,8 +6,8 @@ import java.util.UUID;
  */
 public class StockInsuficiente extends RuntimeException {
     /**
-     * Constructor que recibe el UUID del producto y construye un mensaje de error indicando que no hay suficiente stock.
-     * @param productoId El UUID del producto con stock insuficiente.
+     * Constructor que recibe el UUID del producto con stock insuficiente y construye un mensaje de error.
+     * @param productoId El UUID del producto que no tiene suficiente stock.
      */
     public StockInsuficiente(UUID productoId) {
         super("Stock insuficiente para el producto con id: " + productoId);

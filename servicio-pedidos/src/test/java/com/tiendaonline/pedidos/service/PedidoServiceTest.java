@@ -28,7 +28,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 /**
- * Pruebas unitarias para la clase PedidoService.
+ * Clase de prueba para el servicio PedidoService.
+ * Contiene pruebas unitarias para los métodos de creación, obtención y cancelación de pedidos.
  */
 @ExtendWith(MockitoExtension.class)
 public class PedidoServiceTest {
@@ -42,10 +43,9 @@ public class PedidoServiceTest {
 
     @InjectMocks
     private PedidoService pedidoService;
-
     /**
-     * Prueba unitaria para el método obtenerPorId de PedidoService.
-     * Verifica que cuando se proporciona un ID válido, se retorna un PedidoResponse correspondiente.
+     * Prueba unitaria para el método obtenerPorId del servicio PedidoService.
+     * Verifica que se retorne un PedidoResponse válido cuando el pedido existe en el repositorio.
      */
     @Test
     void obtenerPorId_cuandoExiste_retornaPedidoResponse() {
@@ -70,8 +70,8 @@ public class PedidoServiceTest {
         verify(pedidoRepository, times(1)).findById(id);
     }
     /**
-     * Prueba unitaria para el método obtenerPorId de PedidoService.
-     * Verifica que cuando se proporciona un ID que no existe, se lanza la excepción PedidoNoEncontrado.
+     * Prueba unitaria para el método obtenerPorId del servicio PedidoService.
+     * Verifica que se lance una excepción PedidoNoEncontrado cuando el pedido no existe en el repositorio.
      */
     @Test
     void obtenerPorId_cuandoNoExiste_lanzaExcepcion() {
@@ -82,8 +82,8 @@ public class PedidoServiceTest {
         verify(pedidoRepository, times(1)).findById(id);
     }
     /**
-     * Prueba unitaria para el método listarPorCliente de PedidoService.
-     * Verifica que cuando se proporciona un clienteId válido, se retorna una lista de PedidoResponse correspondiente.
+     * Prueba unitaria para el método listarPorCliente del servicio PedidoService.
+     * Verifica que se retorne una lista de pedidos cuando existen pedidos asociados al cliente.
      */
     @Test
     void listarPorClienteId_retornaListaDePedidos() {
@@ -106,12 +106,11 @@ public class PedidoServiceTest {
         verify(pedidoRepository, times(1)).findByClienteId(clienteId);
     }
     /**
-     * Prueba unitaria para el método crearPedido de PedidoService.
-     * Verifica que cuando el cliente existe y hay stock suficiente, se crea el pedido exitosamente.
+     * Prueba unitaria para el método crearPedido del servicio PedidoService.
+     * Verifica que se cree un pedido exitosamente cuando el cliente existe y hay suficiente stock.
      */
     @Test
     void crearPedido_cuandoClienteExisteYHayStock_creaPedidoExitosamente() {
-        // Arrange
         UUID clienteId = UUID.randomUUID();
         UUID productoId = UUID.randomUUID();
 
@@ -134,25 +133,21 @@ public class PedidoServiceTest {
             return p;
         });
 
-        // Act
         PedidoResponse response = pedidoService.crearPedido(request);
 
-        // Assert
         assertNotNull(response);
         assertEquals(clienteId, response.getClienteId());
         assertEquals(EstadoPedido.CREADO, response.getEstado());
-        // 2 unidades * $100.00 = $200.00
         assertEquals(new BigDecimal("200.00"), response.getMontoTotal());
         assertEquals(1, response.getItems().size());
         verify(pedidoRepository, times(1)).save(any(Pedido.class));
     }
     /**
-     * Prueba unitaria para el método crearPedido de PedidoService.
-     * Verifica que cuando el cliente no existe, se lanza la excepción ClienteNoEncontrado.
+     * Prueba unitaria para el método crearPedido del servicio PedidoService.
+     * Verifica que se lance una excepción ClienteNoEncontrado cuando el cliente no existe.
      */
     @Test
     void crearPedido_cuandoClienteNoExiste_lanzaExcepcion() {
-        // Arrange
         UUID clienteId = UUID.randomUUID();
         PedidoRequest request = PedidoRequest.builder()
                 .clienteId(clienteId)
@@ -167,18 +162,16 @@ public class PedidoServiceTest {
 
         when(clientesClient.existeCliente(clienteId)).thenReturn(false);
 
-        // Act & Assert
         assertThrows(ClienteNoEncontrado.class, () -> pedidoService.crearPedido(request));
         verify(pedidoRepository, never()).save(any(Pedido.class));
         verify(inventarioClient, never()).reservarStock(any(), any(), any());
     }
     /**
-     * Prueba unitaria para el método crearPedido de PedidoService.
-     * Verifica que cuando no hay stock suficiente para un producto, se lanza la excepción StockInsuficiente.
+     * Prueba unitaria para el método crearPedido del servicio PedidoService.
+     * Verifica que se lance una excepción StockInsuficiente cuando no hay suficiente stock para un producto.
      */
     @Test
     void crearPedido_cuandoNoHayStock_lanzaExcepcion() {
-        // Arrange
         UUID clienteId = UUID.randomUUID();
         UUID productoId = UUID.randomUUID();
         PedidoRequest request = PedidoRequest.builder()
@@ -195,13 +188,12 @@ public class PedidoServiceTest {
         when(clientesClient.existeCliente(clienteId)).thenReturn(true);
         when(inventarioClient.reservarStock(eq(productoId), any(UUID.class), eq(5))).thenReturn(false);
 
-        // Act & Assert
         assertThrows(StockInsuficiente.class, () -> pedidoService.crearPedido(request));
         verify(pedidoRepository, never()).save(any(Pedido.class));
     }
-
     /**
-     * Prueba unitaria para cancelarPedido cuando el estado es CREADO.
+     * Prueba unitaria para el método cancelarPedido del servicio PedidoService.
+     * Verifica que se cancele un pedido exitosamente cuando su estado es CREADO.
      */
     @Test
     void cancelarPedido_cuandoEstadoEsCreado_cancelaYLiberaStock() {
@@ -223,9 +215,9 @@ public class PedidoServiceTest {
         verify(inventarioClient, times(1)).liberarReservaPorPedido(id);
         verify(pedidoRepository, times(1)).save(pedido);
     }
-
     /**
-     * Prueba unitaria para cancelarPedido cuando el pedido ya está CANCELADO.
+     * Prueba unitaria para el método cancelarPedido del servicio PedidoService.
+     * Verifica que se lance una excepción EstadoPedidoInvalido cuando el pedido ya está cancelado.
      */
     @Test
     void cancelarPedido_cuandoEstadoYaEsCancelado_lanzaExcepcion() {

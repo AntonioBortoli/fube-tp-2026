@@ -9,7 +9,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.UUID;
 /**
- * DTO para representar la respuesta de un ItemPedido.
+ * DTO para la respuesta de un item de pedido.
+ * Contiene el identificador del item, el identificador del producto, la cantidad y el precio unitario.
  */
 @Getter
 @Setter
@@ -17,8 +18,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ItemPedidoResponse {
+
     private UUID id;
+
     private UUID productoId;
+
     private Integer cantidad;
+
     private BigDecimal precioUnitario;
 }

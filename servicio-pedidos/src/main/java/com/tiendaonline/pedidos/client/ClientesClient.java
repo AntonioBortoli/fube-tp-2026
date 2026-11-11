@@ -9,17 +9,20 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
-
 /**
  * Cliente REST para interactuar con el servicio de clientes.
- * Proporciona métodos para verificar la existencia de clientes en el sistema.
  */
 @Component
 @Slf4j
 public class ClientesClient {
 
     private final RestClient restClient;
-
+    /**
+     * Constructor para inicializar el cliente REST con la URL base del servicio de clientes.
+     *
+     * @param builder  El constructor de RestClient.
+     * @param baseUrl  La URL base del servicio de clientes, inyectada desde las propiedades de configuración.
+     */
     public ClientesClient(
             RestClient.Builder builder,
             @Value("${servicios.clientes.url}") String baseUrl) {
@@ -28,12 +31,11 @@ public class ClientesClient {
                 .requestFactory(new JdkClientHttpRequestFactory())
                 .build();
     }
-
     /**
-     * Verifica si un cliente existe en el servicio de clientes.
+     * Verifica si un cliente existe en el sistema.
      *
-     * @param clienteId El ID del cliente a verificar.
-     * @return true si el cliente existe (HTTP 2xx), false si no existe (404) o falla la llamada.
+     * @param clienteId El UUID del cliente a verificar.
+     * @return true si el cliente existe, false en caso contrario.
      */
     public boolean existeCliente(UUID clienteId) {
         try {

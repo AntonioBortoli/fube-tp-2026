@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 /**
  * Controlador REST para la gestión de pedidos.
- * Proporciona endpoints para consultar y listar pedidos.
+ * Proporciona endpoints para crear, consultar, listar y cancelar pedidos.
+ * Utiliza el servicio PedidoService para realizar las operaciones de negocio.
  */
 @RestController
 @RequestMapping("/pedidos")
@@ -24,9 +26,11 @@ public class PedidoController {
 
     private final PedidoService pedidoService;
     /**
-     * Endpoint para consultar un pedido mediante su identificador.
-     * @param id Identificador del pedido.
-     * @return Detalles del pedido.
+     * Endpoint para obtener un pedido por su identificador.
+     * Si el pedido no existe, se lanza una excepción PedidoNoEncontrado.
+     *
+     * @param id Identificador del pedido a consultar.
+     * @return ResponseEntity con el PedidoResponse correspondiente al pedido solicitado.
      */
     @GetMapping("/{id}")
     @Operation(summary = "Consultar un pedido mediante su identificador")
@@ -34,9 +38,12 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.obtenerPorId(id));
     }
     /**
-     * Endpoint para listar los pedidos de un cliente.
-     * @param clienteId Identificador del cliente (opcional).
-     * @return Lista de pedidos del cliente o lista vacía si no se proporciona clienteId.
+     * Endpoint para listar los pedidos de un cliente específico.
+     * Si se proporciona un clienteId, se retornan los pedidos asociados a ese cliente.
+     * Si no se proporciona un clienteId, se retorna una lista vacía.
+     *
+     * @param clienteId Identificador del cliente cuyos pedidos se desean listar (opcional).
+     * @return ResponseEntity con la lista de PedidoResponse correspondientes al cliente.
      */
     @GetMapping
     @Operation(summary = "Listar los pedidos de un cliente")
@@ -44,26 +51,28 @@ public class PedidoController {
         if (clienteId != null) {
             return ResponseEntity.ok(pedidoService.listarPorCliente(clienteId));
         }
-        // Si no mandan clienteId podemos retornar lista vacía o implementar un listar todos si hiciera falta
         return ResponseEntity.ok(List.of());
     }
     /**
      * Endpoint para crear un nuevo pedido.
-     * Verifica la existencia del cliente y reserva el stock de los productos.
-     * @param request DTO con los detalles del pedido a crear.
-     * @return Detalles del pedido creado.
+     * Verifica que el cliente exista y que haya suficiente stock para los productos solicitados.
+     * Si todo es correcto, crea el pedido en estado CREADO y reserva el stock correspondiente.
+     *
+     * @param request Objeto PedidoRequest que contiene los detalles del pedido a crear.
+     * @return ResponseEntity con el PedidoResponse del pedido creado.
      */
     @PostMapping
     @Operation(summary = "Crear un nuevo pedido verificando cliente y reservando stock")
     public ResponseEntity<PedidoResponse> crearPedido(@Valid @RequestBody PedidoRequest request) {
         PedidoResponse response = pedidoService.crearPedido(request);
-        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
     /**
-     * Endpoint para cancelar un pedido en estado CREADO o CONFIRMADO liberando su reserva de stock.
-     * @param id Identificador del pedido.
-     * @return Detalles del pedido cancelado.
+     * Endpoint para confirmar un pedido en estado CREADO.
+     * Cambia el estado del pedido a CONFIRMADO y mantiene la reserva de stock.
+     *
+     * @param id Identificador del pedido a confirmar.
+     * @return ResponseEntity con el PedidoResponse actualizado.
      */
     @PostMapping("/{id}/cancelar")
     @Operation(summary = "Cancelar un pedido en estado CREADO o CONFIRMADO liberando la reserva de stock")

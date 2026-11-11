@@ -11,17 +11,20 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.util.UUID;
-
 /**
  * Cliente REST para interactuar con el servicio de inventario.
- * Proporciona métodos para reservar y liberar stock de productos.
  */
 @Component
 @Slf4j
 public class InventarioClient {
 
     private final RestClient restClient;
-
+    /**
+     * Constructor para inicializar el cliente REST con la URL base del servicio de inventario.
+     *
+     * @param builder  El constructor de RestClient.
+     * @param baseUrl  La URL base del servicio de inventario, inyectada desde las propiedades de configuración.
+     */
     public InventarioClient(
             RestClient.Builder builder,
             @Value("${servicios.inventario.url}") String baseUrl) {
@@ -30,14 +33,13 @@ public class InventarioClient {
                 .requestFactory(new JdkClientHttpRequestFactory())
                 .build();
     }
-
     /**
-     * Intenta reservar stock para un producto específico asociado a un pedido.
+     * Intenta reservar stock para un producto específico en un pedido.
      *
-     * @param productoId El ID del producto para el cual se desea reservar stock.
-     * @param pedidoId   El ID del pedido asociado a la reserva.
-     * @param cantidad   La cantidad de stock que se desea reservar.
-     * @return true si la reserva fue exitosa (HTTP 2xx), false si fue rechazada o hubo error.
+     * @param productoId El UUID del producto para el cual se desea reservar stock.
+     * @param pedidoId   El UUID del pedido asociado a la reserva.
+     * @param cantidad   La cantidad de stock a reservar.
+     * @return true si la reserva fue exitosa, false en caso contrario.
      */
     public boolean reservarStock(UUID productoId, UUID pedidoId, Integer cantidad) {
         try {
@@ -65,11 +67,10 @@ public class InventarioClient {
             return false;
         }
     }
-
     /**
-     * Libera las reservas de stock asociadas a un pedido específico.
+     * Intenta liberar la reserva de stock asociada a un pedido específico.
      *
-     * @param pedidoId El ID del pedido cuyas reservas deben ser liberadas.
+     * @param pedidoId El UUID del pedido para el cual se desea liberar la reserva de stock.
      */
     public void liberarReservaPorPedido(UUID pedidoId) {
         try {
