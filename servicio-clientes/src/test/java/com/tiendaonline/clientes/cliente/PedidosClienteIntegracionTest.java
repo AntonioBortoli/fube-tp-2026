@@ -63,7 +63,7 @@ public class PedidosClienteIntegracionTest {
                         "id": "%s",
                         "estado": "CONFIRMADO",
                         "fecha": "2026-11-09T15:30:00",
-                        "total": 25000.50
+                        "montoTotal": 25000.50
                     }
                 ]
                 
@@ -83,7 +83,7 @@ public class PedidosClienteIntegracionTest {
         );
 
 
-        List<PedidoResumenResponse> pedidos = pedidosCliente.obtenerPedidosPorCliente(pedidoId);
+        List<PedidoResumenResponse> pedidos = pedidosCliente.obtenerPedidosPorCliente(clienteId);
 
 
         assertEquals(1, pedidos.size());
