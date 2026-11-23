@@ -17,7 +17,7 @@ import com.tiendaonline.pedidos.repository.PedidoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PedidoService {
     private final ClientesClient clientesClient;
     private final InventarioClient inventarioClient;
@@ -176,6 +177,28 @@ public class PedidoService {
         inventarioClient.liberarReservaPorPedido(pedido.getId());
 
         pedido.setEstado(EstadoPedido.CANCELADO);
+        pedido.setFechaActualizacion(LocalDateTime.now());
+
+        return mapearADto(pedidoRepository.save(pedido));
+    }
+
+    /**
+     * Confirma un pedido en estado CREADO.
+     * Cambia el estado del pedido a CONFIRMADO y actualiza la fecha de actualización.
+     *
+     * @param id Identificador del pedido a confirmar.
+     * @return PedidoResponse actualizado después de la confirmación.
+     */
+    @Transactional
+    public PedidoResponse confirmarPedido(UUID id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new PedidoNoEncontrado(id));
+
+        if (pedido.getEstado() != EstadoPedido.CREADO) {
+            throw new EstadoPedidoInvalido("Solo se pueden confirmar pedidos en estado CREADO");
+        }
+
+        pedido.setEstado(EstadoPedido.CONFIRMADO);
         pedido.setFechaActualizacion(LocalDateTime.now());
 
         return mapearADto(pedidoRepository.save(pedido));

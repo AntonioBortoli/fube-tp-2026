@@ -233,4 +233,71 @@ public class PedidoServiceTest {
         verify(inventarioClient, never()).liberarReservaPorPedido(any());
         verify(pedidoRepository, never()).save(any());
     }
+
+    /**
+     * Prueba unitaria para el método cancelarPedido cuando el estado es CONFIRMADO.
+     * Verifica que se cancele un pedido exitosamente y se libere stock cuando su estado es CONFIRMADO.
+     */
+    @Test
+    void cancelarPedido_cuandoEstadoEsConfirmado_cancelaYLiberaStock() {
+        UUID id = UUID.randomUUID();
+        Pedido pedido = Pedido.builder()
+                .id(id)
+                .clienteId(UUID.randomUUID())
+                .estado(EstadoPedido.CONFIRMADO)
+                .montoTotal(new BigDecimal("100.00"))
+                .items(new ArrayList<>())
+                .build();
+
+        when(pedidoRepository.findById(id)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> i.getArgument(0));
+
+        PedidoResponse response = pedidoService.cancelarPedido(id);
+
+        assertEquals(EstadoPedido.CANCELADO, response.getEstado());
+        verify(inventarioClient, times(1)).liberarReservaPorPedido(id);
+        verify(pedidoRepository, times(1)).save(pedido);
+    }
+
+    /**
+     * Prueba unitaria para el método confirmarPedido cuando el estado es CREADO.
+     * Verifica que se confirme el pedido exitosamente y pase a estado CONFIRMADO.
+     */
+    @Test
+    void confirmarPedido_cuandoEstadoEsCreado_confirmaExitosamente() {
+        UUID id = UUID.randomUUID();
+        Pedido pedido = Pedido.builder()
+                .id(id)
+                .clienteId(UUID.randomUUID())
+                .estado(EstadoPedido.CREADO)
+                .montoTotal(new BigDecimal("150.00"))
+                .items(new ArrayList<>())
+                .build();
+
+        when(pedidoRepository.findById(id)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> i.getArgument(0));
+
+        PedidoResponse response = pedidoService.confirmarPedido(id);
+
+        assertEquals(EstadoPedido.CONFIRMADO, response.getEstado());
+        verify(pedidoRepository, times(1)).save(pedido);
+    }
+
+    /**
+     * Prueba unitaria para el método confirmarPedido cuando el estado no es CREADO.
+     * Verifica que se lance una excepción EstadoPedidoInvalido.
+     */
+    @Test
+    void confirmarPedido_cuandoEstadoNoEsCreado_lanzaExcepcion() {
+        UUID id = UUID.randomUUID();
+        Pedido pedido = Pedido.builder()
+                .id(id)
+                .estado(EstadoPedido.CANCELADO)
+                .build();
+
+        when(pedidoRepository.findById(id)).thenReturn(Optional.of(pedido));
+
+        assertThrows(EstadoPedidoInvalido.class, () -> pedidoService.confirmarPedido(id));
+        verify(pedidoRepository, never()).save(any());
+    }
 }

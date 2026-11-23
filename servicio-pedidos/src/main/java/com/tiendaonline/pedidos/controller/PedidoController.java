@@ -74,6 +74,19 @@ public class PedidoController {
      * @param id Identificador del pedido a confirmar.
      * @return ResponseEntity con el PedidoResponse actualizado.
      */
+    @PostMapping("/{id}/confirmar")
+    @Operation(summary = "Confirmar un pedido en estado CREADO")
+    public ResponseEntity<PedidoResponse> confirmarPedido(@PathVariable UUID id) {
+        return ResponseEntity.ok(pedidoService.confirmarPedido(id));
+    }
+
+    /**
+     * Endpoint para cancelar un pedido en estado CREADO o CONFIRMADO.
+     * Cambia el estado del pedido a CANCELADO y libera la reserva de stock asociada.
+     *
+     * @param id Identificador del pedido a cancelar.
+     * @return ResponseEntity con el PedidoResponse actualizado.
+     */
     @PostMapping("/{id}/cancelar")
     @Operation(summary = "Cancelar un pedido en estado CREADO o CONFIRMADO liberando la reserva de stock")
     public ResponseEntity<PedidoResponse> cancelarPedido(@PathVariable UUID id) {
