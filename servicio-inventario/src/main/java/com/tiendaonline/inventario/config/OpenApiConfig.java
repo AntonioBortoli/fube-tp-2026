@@ -6,6 +6,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
+/**
+ * Clase que configura la documentación de la API REST.
+ * 
+ */
+
+
+
+
 
 @Configuration
 public class OpenApiConfig {

@@ -20,6 +20,16 @@ import java.util.List;
 
 
 import java.util.UUID;
+/** 
+ * Controlador REST que expone los endpoints para la gestión de stock y reservas.
+ * @version 1.0
+ * @param productoId ID del producto
+ * @param pedidoId ID del pedido
+ * @param cantidad Cantidad reservada
+ * @param estado Estado de la reserva
+ * @param fechaCreacion Fecha de creación
+ * */
+
 
 @Tag(name = "Inventario", description = "Operaciones de stock y reservas")
 @RestController

@@ -9,8 +9,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maneja las excepciones del servicio
+ * @version 1.0
+ */
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+    /**
+     *  Maneja la excepción de recurso no encontrado   * 
+     * @param ex
+     * @return
+    */
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(RecursoNoEncontradoException ex) {
@@ -18,7 +30,11 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
-
+    /**
+     * Maneja la excepción de stock insuficiente   * 
+     * @param ex
+     * @return
+     */
 
     @ExceptionHandler(StockInsuficienteException.class)
     public ResponseEntity<Map<String, String>> handleStockInsuficiente(StockInsuficienteException ex) {
@@ -26,7 +42,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
-
+    /**
+     * Maneja la excepción de validacion   * 
+     * @param ex
+     * @return
+     */
+    
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
@@ -44,6 +65,11 @@ public class GlobalExceptionHandler {
                 .body(errores);
     }
 
+/**
+     * Maneja la excepción de tipo de argumento no válido   * 
+     * @param ex
+     * @return
+     */
 
     @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, String>> handleTypeMismatch(Exception ex) {
@@ -51,7 +77,9 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "Identificador o parámetro con formato inválido"));
     }
 
-    
+   
+
+
     @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleNotReadable(Exception ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

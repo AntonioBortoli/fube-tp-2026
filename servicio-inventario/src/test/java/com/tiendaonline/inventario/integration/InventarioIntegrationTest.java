@@ -20,6 +20,16 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+/** 
+ * Clase que representa las pruebas de integración del inventario
+ * @version 1.0
+ * @param mockMvc MockMvc para realizar peticiones
+ * @param objectMapper ObjectMapper para convertir objetos a JSON
+ * @param productoRepository Repositorio de productos
+ * @param reservaRepository Repositorio de reservas
+ * @param productoGuardado Producto guardado
+ * */
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -53,6 +63,8 @@ class InventarioIntegrationTest {
    
    
     }
+
+
 
     @Test
     void consultarDisponibilidad_productoExiste_debeRetornar200() throws Exception {

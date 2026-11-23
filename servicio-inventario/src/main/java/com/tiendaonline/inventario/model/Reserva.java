@@ -9,6 +9,18 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+/**
+ * Clase que representa una reserva en el inventario
+ * @param id
+ * @param producto
+ * @param pedidoId
+ * @param cantidad
+ * @param estado
+ * @param fechaCreacion
+ * @version 1.0
+ *
+ */
+
 @Entity
 @Table(name = "reservas")
 @Getter

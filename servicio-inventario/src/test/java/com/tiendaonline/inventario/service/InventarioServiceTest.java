@@ -24,6 +24,20 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+/** 
+ * Clase que representa las pruebas del servicio de inventario 
+ * @version 1.0
+ * @param productoRepository Repositorio de productos
+ * @param reservaRepository Repositorio de reservas
+ * @param productoProducto creado
+ * @param request ReservaRequest para crear reserva
+ * @param reserva Reserva creada
+ * @param response ReservaResponse creada
+ * @param idInexistente ID inexistente
+ * */
+
+
+
 
 @ExtendWith(MockitoExtension.class)  
 class InventarioServiceTest {
