@@ -1,0 +1,25 @@
+package com.tiendaonline.clientes.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
+
+import java.util.List;
+
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+
+public class ClienteConPedidosResponse {
+
+    private ClienteResponse cliente;
+    private List<PedidoResumenResponse> pedidos;
+
+}
